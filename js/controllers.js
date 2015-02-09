@@ -13,6 +13,12 @@ angular.module('raw.controllers', [])
       { title : 'Cocktails (correlations)', url : 'data/correlations.csv' }
     ]
 
+    $scope.dataviewurl = "http://localhost:5000/api/slicer/cube/geometry/cubes_aggregate?cubes=sci_articles&drilldown=geometry__country_level0@dos_level1|sci_articles__time&format=csv";
+
+    $scope.addDataView = function(){
+      $scope.sample = {title:"MyDataViz", url:$scope.dataviewurl};
+    };
+
     $scope.$watch('sample', function (sample){
       if (!sample) return;
       dataService.loadSample(sample.url).then(
