@@ -2,6 +2,8 @@
 
 /* Directives */
 
+var globalscope = null;
+
 angular.module('raw.directives', [])
 
 	.directive('chart', function ($rootScope, dataService) {
@@ -17,6 +19,9 @@ angular.module('raw.directives', [])
 
 	        	if (!scope.chart || !scope.data.length) return;
 						if (!scope.model.isValid()) return;
+
+				globalscope = scope;
+
 
 	        	d3.select(element[0])
 	        		.append("svg")
@@ -38,6 +43,8 @@ angular.module('raw.directives', [])
 	        scope.$on('update', update);
 	        //scope.$watch('data', update)
 	        scope.$watch(function(){ if (scope.model) return scope.model(scope.data); }, update, true);
+
+	        //if option changes then do stuff
 	        scope.$watch(function(){ if (scope.chart) return scope.chart.options().map(function (d){ return d.value }); }, scope.delayUpdate, true);
 
 	      }

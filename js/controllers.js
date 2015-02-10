@@ -63,6 +63,10 @@ angular.module('raw.controllers', [])
       $scope.loading = false;
     }
 
+    $scope.parseOptions = function(jsontext){
+
+    };
+
     $scope.delayParse = dataService.debounce($scope.parse, 500, false);
 
     $scope.$watch("text", function (text){
@@ -151,6 +155,43 @@ angular.module('raw.controllers', [])
         .css("width", "");
 
     })
+
+
+    //let's register our options here
+
+
+    $scope.chartoptions = "";
+
+    $scope.fetchOptions = function(){
+      //need JSON fallback
+      $scope.chartoptions =  JSON.stringify({
+        "chartType": $scope.chart.title(),
+        "dimensions": $scope.model.getOptions(),
+        "chartOptions": $scope.chart.getOptions(),
+        "dataSource" : $scope.dataviewurl
+      });
+      return;
+    };
+
+    $scope.runOptions = function(){
+      var optSet = JSON.parse($scope.chartoptions);
+      $scope.model.clear();
+      //find the chart name
+      $.each($scope.charts, function(i,v){
+        if (v.title() == optSet['chartType']){
+          $scope.chart = v;
+          $scope.model = $scope.chart.model();
+        }
+      });
+      $scope.model.setOptions(optSet['dimensions']);
+      $scope.chart.setOptions(optSet['chartOptions']);
+      $scope.$emit('update');
+
+    };
+
+
+
+
 
     $(document).ready(refreshScroll);
 

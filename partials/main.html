@@ -9,11 +9,23 @@
             <div class="col-sm-3">
             <input class="form-control" ng-model="dataviewurl" type="text"/>
             </div>
-
             
             <button ng-click="addDataView()">
                 Add Data from F/PA name TBD
             </button>
+
+            <br/>
+            <br/>
+
+            <textarea ng-model="chartoptions">
+            </textarea>
+            <button ng-click="fetchOptions()">
+                Fetch Options
+            </button>
+            <button ng-click="runOptions()">
+                Run Options
+            </button>
+
 
             <br/>
             <br/>
