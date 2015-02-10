@@ -3,6 +3,7 @@
 /* Directives */
 
 var globalscope = null;
+var colorscope = null;
 
 angular.module('raw.directives', [])
 
@@ -12,6 +13,9 @@ angular.module('raw.directives', [])
 	      link: function postLink(scope, element, attrs) {
 
 	        function update(){
+	        	if (scope.tempstopwatch){
+	        		return;
+	        	}
 
 	        	$('*[data-toggle="tooltip"]').tooltip({ container:'body' });
 
@@ -45,7 +49,11 @@ angular.module('raw.directives', [])
 	        scope.$watch(function(){ if (scope.model) return scope.model(scope.data); }, update, true);
 
 	        //if option changes then do stuff
-	        scope.$watch(function(){ if (scope.chart) return scope.chart.options().map(function (d){ return d.value }); }, scope.delayUpdate, true);
+	        scope.$watch(function(){ 
+	        	if (scope.chart && ! scope.tempstopwatch){
+	        		return scope.chart.options().map(function (d){ return d.value }); }
+	        	}
+	        	, scope.delayUpdate, true);
 
 	      }
 	    };
@@ -81,6 +89,8 @@ angular.module('raw.directives', [])
 	      restrict: 'A',
 	      templateUrl : 'templates/colors.html',
 	      link: function postLink(scope, element, attrs) {
+
+	      	colorscope = scope;
 
 	        scope.scales = [ 
 	        	
@@ -180,7 +190,9 @@ angular.module('raw.directives', [])
 	        }
 
 	        scope.$watch('option.value', function (value){
-	        	if(!value) scope.setScale();
+	        	if(!value){
+	        		scope.setScale()
+	        	}
 	        })
 	        
 

@@ -173,10 +173,14 @@ angular.module('raw.controllers', [])
       return;
     };
 
+    $scope.tempstopwatch = false;
+
     $scope.runOptions = function(){
+      //should disable all user options when this is set to true
       var optSet = JSON.parse($scope.chartoptions);
       $scope.model.clear();
       //find the chart name
+      $scope.tempstopwatch = true;
       $.each($scope.charts, function(i,v){
         if (v.title() == optSet['chartType']){
           $scope.chart = v;
@@ -184,7 +188,9 @@ angular.module('raw.controllers', [])
         }
       });
       $scope.model.setOptions(optSet['dimensions']);
-      $scope.chart.setOptions(optSet['chartOptions']);
+      $scope.$apply();
+      $scope.chart.setOptions(optSet['chartOptions'], $scope);
+      $scope.tempstopwatch = false;
       $scope.$emit('update');
 
     };
