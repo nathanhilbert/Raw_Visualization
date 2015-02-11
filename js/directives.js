@@ -11,47 +11,50 @@ angular.module('raw.directives', [])
 	    return {
 	      restrict: 'A',
 	      link: function postLink(scope, element, attrs) {
-
 	        function update(){
+
 	        	if (scope.tempstopwatch){
 	        		return;
 	        	}
 
-	        	$('*[data-toggle="tooltip"]').tooltip({ container:'body' });
+	        	//TO DO 
+	        	//$('*[data-toggle="tooltip"]').tooltip({ container:'body' });
 
 	        	d3.select(element[0]).select("*").remove();
 
-	        	if (!scope.chart || !scope.data.length) return;
-						if (!scope.model.isValid()) return;
+
+	        	if (!scope.chartset[attrs['title']].chart || !scope.data.length) return;
+						if (!scope.chartset[attrs['title']].modelstore.isValid()) return;
 
 				globalscope = scope;
-
 
 	        	d3.select(element[0])
 	        		.append("svg")
 	        		.datum(scope.data)
-	        		.call(scope.chart)
+	        		.call(scope.chartset[attrs['title']].chart)
 
 	    			scope.svgCode = d3.select(element[0])
 	        			.select('svg')
 	    				.attr("xmlns", "http://www.w3.org/2000/svg")
 	    				.node().parentNode.innerHTML;
 	    			
-	    			$rootScope.$broadcast("completeGraph");
+	    			//$rootScope.$broadcast("completeGraph");
 
 	        }
 
 	        scope.delayUpdate = dataService.debounce(update, 300, false);
 
-	        scope.$watch('chart', update);
+	        scope.$watch('chartset[attrs["title"]].chart', update);
+	        //scope.$watch('chart', update);
+
 	        scope.$on('update', update);
 	        //scope.$watch('data', update)
-	        scope.$watch(function(){ if (scope.model) return scope.model(scope.data); }, update, true);
+	        scope.$watch(function(){ if (scope.chartset[attrs['title']].modelstore) return scope.chartset[attrs['title']].modelstore(scope.data); }, update, true);
 
 	        //if option changes then do stuff
 	        scope.$watch(function(){ 
-	        	if (scope.chart && ! scope.tempstopwatch){
-	        		return scope.chart.options().map(function (d){ return d.value }); }
+	        	if (scope.chartset[attrs['title']].chart && ! scope.tempstopwatch){
+	        		return scope.chartset[attrs['title']].chart.options().map(function (d){ return d.value }); }
 	        	}
 	        	, scope.delayUpdate, true);
 
@@ -70,7 +73,12 @@ angular.module('raw.directives', [])
 	        	scope.$apply(fitWidth);
 	        });
 
-	        scope.$watch('chart', fitWidth);
+
+	        scope.$watch(function(){
+	        	if (scope.chartset[attrs['title']].chart){
+	        		return scope.chartset[attrs['title']].chart;
+	        	}
+	        }, fitWidth);
 
 	        function fitWidth(chart, old){
 	        	if (chart == old) return;
