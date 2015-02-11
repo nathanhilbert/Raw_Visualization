@@ -160,7 +160,7 @@ angular.module('raw.controllers', [])
     //let's register our options here
 
 
-    $scope.chartoptions = "";
+    $scope.chartoptions = '{"chartType":"Small Multiples (Area)","dimensions":[{"key":"0","value":[{"key":"Department of State","type":"String"}]},{"key":"1","value":[{"key":"Year","type":"Number"}]},{"key":"2","value":[{"key":"Amount","type":"Number"}]}],"chartOptions":{"Width":{"type":"number","value":847},"Height":{"type":"number","value":500},"Padding":{"type":"number","value":10},"Use same scale":{"type":"checkbox","value":true},"Color scale":{"type":"color","values":{"AF":"#bf6969","EAP":"#bfbf69","EUR":"#69bf69","NEA":"#69bfbf","SCA":"#6969bf","WHA":"#bf69bf"}}},"dataSource":"http://localhost:5000/api/slicer/cube/geometry/cubes_aggregate?cubes=sci_articles&drilldown=geometry__country_level0@dos_level1|sci_articles__time&format=csv"}';
 
     $scope.fetchOptions = function(){
       //need JSON fallback
@@ -196,10 +196,24 @@ angular.module('raw.controllers', [])
     };
 
 
-
-
-
     $(document).ready(refreshScroll);
 
+    if ($scope.dataviewurl && $scope.chartoptions){
+      dataService.loadSample($scope.dataviewurl).then(
+        function(data){
+          $scope.tempstopwatch = true;
+          $scope.text = data;
+          var temploadwatch = $scope.$watch('loading', function (loading){
+            if (loading == false){
+              $scope.runOptions();
+              temploadwatch();
+            }
+          });
+        }, 
+        function(error){
+          $scope.error = error;
+        }
+      );
+    }
 
   })
