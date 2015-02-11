@@ -195,6 +195,17 @@ angular.module('raw.controllers', [])
 
     };
 
+    $scope.chart_view_editing = false;
+
+    $scope.toggleEdit = function(){
+      if ($scope.chart_view_editing == true){
+        $scope.chart_view_editing = false;
+      }
+      else{
+        $scope.chart_view_editing = true;
+      }
+    };
+
 
     $(document).ready(refreshScroll);
 
