@@ -7,83 +7,149 @@ var colorscope = null;
 
 angular.module('raw.directives', [])
 
-	.directive('chart', function ($rootScope, dataService) {
+	.directive('chart', function ($rootScope, dataService, sharedProperties) {
 	    return {
 	      restrict: 'A',
 	      link: function postLink(scope, element, attrs) {
-	        function update(){
 
-	        	if (scope.tempstopwatch){
-	        		return;
-	        	}
+	      	//on initial link set up everything?
+	      	//   //only need to parse this once and cache it
+
+	      	scope.chart_view_editing = false;
+
+	      	scope.toggleEdit = function(chartkeyArg){
+	      		console.log("hitting here");
+			      if (scope.chart_view_editing == true){
+			        scope.chart_view_editing = false;
+			      }
+			      else{
+			        scope.chart_view_editing = true;
+			      }
+	      	};
+
+	      	scope.chartkey = attrs['title'];
+
+      		console.log("heres my chart");
+	      	console.log(scope);
+	      	console.log(scope.chartkey);
+
+
+	      	scope.chart = sharedProperties.getDefaultChart(scope.chartkey);
+
+	      	scope.modelstore = scope.chart.model();
+
+	      	scope.chartsettings = sharedProperties.getOptions(scope.chartkey)
+
+	      	scope.modelstore.setOptions(scope.chartsettings['dimensions']);
+	      	//scope.$apply();
+	      	scope.chart.setOptions(scope.chartsettings['chartOptions']);
+
+	      	sharedProperties.appendChart(scope.chartkey, scope.chart, scope);
+
+
+
+		    //   jQuery.each(optSet['charts'], function(chartname,chartopts){
+
+
+		      //   $scope.chartset[chartname].modelstore.setOptions(chartopts['dimensions']);
+		      //   $scope.$apply();
+		      //   $scope.chartset[chartname].chart.setOptions(chartopts['chartOptions'], $scope);
+		      // });
+		      // //get the dataviewurl
+		      // $scope.tempstopwatch = false;
+		      // //this should only emit to the proper chart element not all chart elements
+		      // $scope.$emit('update');
+
+
+	        function update(){
+	        	console.log("UPDATING " + scope.chartkey);
+
 
 	        	//TO DO 
 	        	//$('*[data-toggle="tooltip"]').tooltip({ container:'body' });
 
-	        	d3.select(element[0]).select("*").remove();
+	        	d3.select(element[0]).select(".chartdiv").select("*").remove();
 
 
-	        	if (!scope.chartset[attrs['title']].chart || !scope.data.length) return;
-						if (!scope.chartset[attrs['title']].modelstore.isValid()) return;
+	        	if (!scope.chart || !sharedProperties.getData().length) return;
+				if (!scope.modelstore.isValid()) return;
 
 				globalscope = scope;
 
 	        	d3.select(element[0])
+	        		.select(".chartdiv")
 	        		.append("svg")
-	        		.datum(scope.data)
-	        		.call(scope.chartset[attrs['title']].chart)
+	        		.datum(sharedProperties.getData())
+	        		.call(scope.chart)
 
 	    			scope.svgCode = d3.select(element[0])
+	    				.select(".chartdiv")
 	        			.select('svg')
 	    				.attr("xmlns", "http://www.w3.org/2000/svg")
 	    				.node().parentNode.innerHTML;
 	    			
-	    			//$rootScope.$broadcast("completeGraph");
+	    			$rootScope.$broadcast("completeGraph");
 
 	        }
 
+
 	        scope.delayUpdate = dataService.debounce(update, 300, false);
 
-	        scope.$watch('chartset[attrs["title"]].chart', update);
+	        scope.$watch('chart', update);
 	        //scope.$watch('chart', update);
 
 	        scope.$on('update', update);
 	        //scope.$watch('data', update)
-	        scope.$watch(function(){ if (scope.chartset[attrs['title']].modelstore) return scope.chartset[attrs['title']].modelstore(scope.data); }, update, true);
+	        scope.$watch(function(){ if (scope.modelstore) return scope.modelstore(sharedProperties.getData()); }, update, true);
 
 	        //if option changes then do stuff
 	        scope.$watch(function(){ 
-	        	if (scope.chartset[attrs['title']].chart && ! scope.tempstopwatch){
-	        		return scope.chartset[attrs['title']].chart.options().map(function (d){ return d.value }); }
+	        	if (scope.chart){
+	        		return scope.chart.options().map(function (d){ return d.value }); }
 	        	}
 	        	, scope.delayUpdate, true);
 
-	      }
-	    };
+	      },
+		  scope: {
+		   //	'chart': '='
+		  },
+		  templateUrl: 'partials/chart.html'
+	    }
 	  })
 
-	.directive('chartOption', function () {
+	.directive('chartOption', function (sharedProperties) {
 	    return {
 	      restrict: 'A',
 	      link: function postLink(scope, element, attrs) {
+	      	console.log("ChartOption Scope");
+	      	console.log(scope);
+	      	console.log(scope.$parent);
+	      	//each chartOption has its own isolate I guess
+	      	scope = sharedProperties.getScope(attrs['title']);
+
+	      	//scope.chartkey = attrs['title'];
+
+	      	//scope.chart = sharedProperties.getChart(scope.chartkey);
 
 	      	var firstTime = false;
 
-	        element.find('.option-fit').click(function(){
-	        	scope.$apply(fitWidth);
-	        });
+	        // element.find('.option-fit').click(function(){
+	        // 	scope.$apply(fitWidth);
+	        // });
+
+	        scope.$watch('chart', fitWidth);
 
 
-	        scope.$watch(function(){
-	        	if (scope.chartset[attrs['title']].chart){
-	        		return scope.chartset[attrs['title']].chart;
-	        	}
-	        }, fitWidth);
+	        // scope.$watch(function(){
+	        // 	if (sharedProperties.getChart(scope.chartkey).chart){
+	        // 		return sharedProperties.getChart(scope.chartkey).chart;
+	        // 	}
+	        // }, fitWidth);
 
 	        function fitWidth(chart, old){
 	        	if (chart == old) return;
 	        	if(!scope.option.fitToWidth || !scope.option.fitToWidth()) return;
-	        	scope.option.value = $('.col-lg-9').width();
+	        	scope.option.value = $('.col-lg-9.' + scope.chartkey).width();
 	        }
 
 	        $(document).ready(fitWidth);
@@ -93,13 +159,16 @@ angular.module('raw.directives', [])
 	  })
 
 
-	.directive('colors', function ($rootScope) {
+	.directive('colors', function ($rootScope, sharedProperties) {
 	    return {
 	      restrict: 'A',
 	      templateUrl : 'templates/colors.html',
 	      link: function postLink(scope, element, attrs) {
+	      	console.log("colorscope")
 
-	      	colorscope = scope;
+
+
+	      	//scope.chart = sharedProperties.getChart(attrs['title']);
 
 	        scope.scales = [ 
 	        	

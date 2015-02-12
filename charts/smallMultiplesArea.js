@@ -100,6 +100,8 @@
             d3.max(data, function(layer) { return d3.max(layer, function(d) { return d.date; }); })
         ])
 
+        console.log(colors);
+
         colors.domain(data, function (d){ return d[0].group; })
 
         svg.selectAll("g")

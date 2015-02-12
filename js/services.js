@@ -45,6 +45,56 @@ angular.module('raw.services', [])
 			      return deferred.promise;
 			    };
 			  }
-
 	  	}
 	})
+	.factory('sharedProperties', function () {
+
+		var optSet = null;
+		var defaultCharts = null;
+		var data = null;
+		var metadata = null;
+		var charts = {};
+		var isoscopes = {};
+
+		return {
+			initialCharts: function(rawCharts){
+				defaultCharts = rawCharts.values().sort(function (a,b){ return a.title() < b.title() ? -1 : a.title() > b.title() ? 1 : 0; })
+			},
+			initialOptions: function(optSetArg){
+				optSet = optSetArg;
+			},
+			initialData: function(dataArg, metadataArg){
+				data = dataArg;
+				metadata = metadataArg;
+			},
+			getDefaultChart: function(chartname){
+				var tempreturn;
+		        $.each(defaultCharts, function(i,v){
+		          if (v.title() == optSet['charts'][chartname]['chartType']){
+		          	//maybe some kind of deep copy 
+		          	// might be solved with isolated scope
+		          	tempreturn = v;
+		          	return false;
+		          }
+		        });
+		        return tempreturn;
+			},
+			getOptions: function(chartname){
+				//check that this exists
+				return optSet['charts'][chartname];
+			},
+			getData: function(){
+				return data;
+			},
+			appendChart: function(chartname, chartobj, scope){
+				charts[chartname] = chartobj;
+				isoscopes[chartname] = scope;
+			},
+			getChart: function(chartname){
+				return charts[chartname];
+			},
+			getScope: function(chartname){
+				return isoscopes[chartname];
+			}
+		};
+    });

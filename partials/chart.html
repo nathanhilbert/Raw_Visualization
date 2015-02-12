@@ -1,0 +1,61 @@
+
+
+        <h3 id="options">
+            Customize your Visualization
+        </h3>
+
+        <div class="row">
+
+            <div ng-show="chart_view_editing" class="col-lg-3">
+                <ul class="list-unstyled">
+                    <li ng-repeat="option in chart.options() track by $index" data-title="{{ chartkey }}" chart-option>
+                        <p class="option-title">
+                            {{option.title()}}
+                            <a data-ng-show="option.fitToWidth()"
+                            data-toggle="tooltip"
+                            data-title="Fit to width"
+                            class="option-fit pull-right"><i class="fa fa-expand"></i></a>
+                        </p>
+
+                        <div ng-switch="" on="option.type()">
+                            <input type="number" min="0" class="form-control" ng-model="option.value" ng-switch-when="number"></input>
+
+                            <div ng-switch-when="checkbox">
+                                <label class="checkbox">
+                                    <input type="checkbox" ng-model="option.value"/>
+                                </label>
+                            </div>
+
+                            <div colors="option.value" ng-switch-when="color" data-title="{{ chartkey }}"></div>
+                            
+                            <button
+                            type="button"
+                            class="btn btn-default"
+                            ng-model="option.value"
+                            ng-change="$apply()"
+                            ng-options="opt for opt in option.values()" bs-select ng-switch-when="list">
+                            Action <span class="caret"></span>
+                            </button>
+
+                        <input type="text" min="0" class="form-control" ng-model="option.value" ng-switch-default="ng-switch-default"></input>
+
+                    </div>
+
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-lg-9 {{ chartkey }}">
+            <div class="chart-resize">
+                <div class="chartdiv"></div>
+                <!-- <div ng-show="modelstore.isValid()" class="chartdiv"></div> -->
+            </div>
+            <button ng-click="toggleEdit({{ chartkey }})">Edit</button>
+            <div class="text-muted text-center" ng-show="!modelstore.isValid()">
+                <!--<i class="fa fa-hand-o-up breath-right"></i>-->
+                <h4><span ng-bind-html="modelstore.instruction()"></span></h4>
+            </div>
+
+        </div>
+
+        </div>
