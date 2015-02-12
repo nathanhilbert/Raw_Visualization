@@ -110,9 +110,7 @@ angular.module('raw.directives', [])
 	        	, scope.delayUpdate, true);
 
 	      },
-		  scope: {
-		   //	'chart': '='
-		  },
+		  scope: true,
 		  templateUrl: 'partials/chart.html'
 	    }
 	  })
@@ -121,15 +119,18 @@ angular.module('raw.directives', [])
 	    return {
 	      restrict: 'A',
 	      link: function postLink(scope, element, attrs) {
+
+	      	//each chartOption has its own isolate I guess
+	      	//scope = sharedProperties.getScope(attrs['title']);
+
+	      	scope.chartkey = attrs['title'];
+
+	      	scope.chart = sharedProperties.getChart(scope.chartkey);
+
 	      	console.log("ChartOption Scope");
 	      	console.log(scope);
 	      	console.log(scope.$parent);
-	      	//each chartOption has its own isolate I guess
-	      	scope = sharedProperties.getScope(attrs['title']);
-
-	      	//scope.chartkey = attrs['title'];
-
-	      	//scope.chart = sharedProperties.getChart(scope.chartkey);
+	      	console.log(scope.chart.options());
 
 	      	var firstTime = false;
 

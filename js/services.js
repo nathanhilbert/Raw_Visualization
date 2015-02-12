@@ -1,5 +1,18 @@
 'use strict';
 
+
+Function.prototype.clone = function() {
+    var that = this;
+    var temp = function temporary() { return that.apply(this, arguments); };
+    for(var key in this) {
+        if (this.hasOwnProperty(key)) {
+            temp[key] = this[key];
+        }
+    }
+    return temp;
+};
+
+
 /* Services */
 
 angular.module('raw.services', [])
@@ -69,11 +82,9 @@ angular.module('raw.services', [])
 			},
 			getDefaultChart: function(chartname){
 				var tempreturn;
-		        $.each(defaultCharts, function(i,v){
-		          if (v.title() == optSet['charts'][chartname]['chartType']){
-		          	//maybe some kind of deep copy 
-		          	// might be solved with isolated scope
-		          	tempreturn = v;
+		        raw.charts.forEach(function(i,v){
+		          if (i == optSet['charts'][chartname]['chartType']){
+		          	tempreturn = v();
 		          	return false;
 		          }
 		        });

@@ -1,4 +1,4 @@
-(function(){
+raw.charts.set('Small Multiples (Area)', function(){
 
     var stream = raw.model();
 
@@ -44,7 +44,7 @@
 
     })
 
-    var chart = raw.chart()
+    var chart = new raw.chart()
         .title('Small Multiples (Area)')
         .thumbnail("imgs/smallMultiples.png")
         .description("A small multiple is a series of small similar graphics or charts, allowing them to be easily compared.<br/>Based on <a href='http://bl.ocks.org/mbostock/9490313'>http://bl.ocks.org/mbostock/9490313</a>")
@@ -100,8 +100,6 @@
             d3.max(data, function(layer) { return d3.max(layer, function(d) { return d.date; }); })
         ])
 
-        console.log(colors);
-
         colors.domain(data, function (d){ return d[0].group; })
 
         svg.selectAll("g")
@@ -143,5 +141,6 @@
         }
 
     })
+    return chart;
 
-})();
+});
