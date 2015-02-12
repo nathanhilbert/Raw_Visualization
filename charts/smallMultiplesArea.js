@@ -54,7 +54,7 @@ raw.charts.set('Small Multiples (Area)', function(){
     var width = chart.number()
         .title("Width")
         .defaultValue(1000)
-        .fitToWidth(true)
+        //.fitToWidth(true)
 
     var height = chart.number()
         .title("Height")

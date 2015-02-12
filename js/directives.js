@@ -18,7 +18,6 @@ angular.module('raw.directives', [])
 	      	scope.chart_view_editing = false;
 
 	      	scope.toggleEdit = function(chartkeyArg){
-	      		console.log("hitting here");
 			      if (scope.chart_view_editing == true){
 			        scope.chart_view_editing = false;
 			      }
@@ -28,10 +27,6 @@ angular.module('raw.directives', [])
 	      	};
 
 	      	scope.chartkey = attrs['title'];
-
-      		console.log("heres my chart");
-	      	console.log(scope);
-	      	console.log(scope.chartkey);
 
 
 	      	scope.chart = sharedProperties.getDefaultChart(scope.chartkey);
@@ -44,7 +39,7 @@ angular.module('raw.directives', [])
 	      	//scope.$apply();
 	      	scope.chart.setOptions(scope.chartsettings['chartOptions']);
 
-	      	sharedProperties.appendChart(scope.chartkey, scope.chart, scope);
+	      	sharedProperties.appendChart(scope.chartkey, scope.chart, scope.modelstore);
 
 
 
@@ -62,7 +57,6 @@ angular.module('raw.directives', [])
 
 
 	        function update(){
-	        	console.log("UPDATING " + scope.chartkey);
 
 
 	        	//TO DO 
@@ -127,18 +121,15 @@ angular.module('raw.directives', [])
 
 	      	scope.chart = sharedProperties.getChart(scope.chartkey);
 
-	      	console.log("ChartOption Scope");
-	      	console.log(scope);
-	      	console.log(scope.$parent);
-	      	console.log(scope.chart.options());
 
 	      	var firstTime = false;
 
-	        // element.find('.option-fit').click(function(){
+	        // element.find('.option-fit.' + scope.chartkey).click(function(){
 	        // 	scope.$apply(fitWidth);
 	        // });
 
-	        scope.$watch('chart', fitWidth);
+	        scope.$watch('$parent.chart', fitWidth);
+
 
 
 	        // scope.$watch(function(){
@@ -165,7 +156,6 @@ angular.module('raw.directives', [])
 	      restrict: 'A',
 	      templateUrl : 'templates/colors.html',
 	      link: function postLink(scope, element, attrs) {
-	      	console.log("colorscope")
 
 
 

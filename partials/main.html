@@ -7,5 +7,75 @@
 </section>
 
 
+    <section class="datasection">
+
+        <div class="container">
+
+            <label class="col-sm-2 control-label">Paste the URL of the dataview</label>
+
+            <div class="col-sm-3">
+            <input class="form-control" ng-model="dataviewurl" type="text"/>
+            </div>
+            
+            <button ng-click="addDataView()">
+                Add Data from F/PA name TBD
+            </button>
+
+            <br/>
+            <br/>
+
+            <textarea ng-model="chartoptions">
+            </textarea>
+            <button ng-click="fetchOptions()">
+                Fetch Options
+            </button>
+            <button ng-click="runOptions()">
+                Run Options
+            </button>
+
+
+            <br/>
+            <br/>
+
+            <h3 id="data">Insert your data
+                <button type="button"
+                class="choose btn btn-default"
+                ng-model="sample"
+                placeholder="or choose one of our samples"
+                ng-options="s as s.title for s in samples" bs-select>
+            </button>
+
+            <span class="list-type pull-right">
+                <i class="type fa fa-align-left breath-left"
+                data-toggle="tooltip"
+                data-title="Text"
+                ng-click="dataView='text'" ng-class="{selected:dataView!='table'}"></i>
+                <i class="type fa fa-table breath-left"
+                data-toggle="tooltip"
+                data-title="Table"
+                ng-click="dataView='table'" ng-class="{selected:dataView=='table'}"></i>
+            </span>
+            <span class="clearfix"></span>
+        </h3>
+
+        <div data-ng-show="dataView != 'table'">
+            <textarea ui-codemirror="codeMirrorOptions" ng-model="text">
+            </textarea>
+        </div>
+
+        <div raw-table class="data-table" data-ng-show="dataView == 'table'"></div>
+
+        <div>
+            <div data-ng-show="!loading && !data.length && !error" class="alert"><i class="fa fa-hand-o-right breath-right"></i> Not sure how it works? <a href="http://raw.densitydesign.org/how-it-works/">Take a look at this video</a> or <a href="https://github.com/densitydesign/raw/wiki/FAQs">visit our FAQs</a></div>
+            <div data-ng-show="!loading && !error && data.length" class="alert alert-success"><i class="fa fa-thumbs-up breath-right"></i><strong>{{data.length}}</strong> records in your data have been successfully parsed!</div>
+            <div data-ng-show="error" class="alert alert-warning"><i class="fa fa-thumbs-down breath-right"></i><strong>Whoops!</strong> Please, check line {{error+1}}</div>
+            <div data-ng-show="loading" class="alert"><i class="fa breath-right fa-refresh fa-spin"></i>Loading your data. Please wait.</div>
+        </div>
+
+        </div>
+
+        </section>
+
+
 
 </div>

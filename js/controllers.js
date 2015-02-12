@@ -181,9 +181,21 @@ angular.module('raw.controllers', [])
 
     $scope.tempstopwatch = false;
 
-    // //do this later 
-    // appendNewChart("chart1");
-    // appendNewChart("chart2");
+    var buildFromOpts = function(){
+        var optSet = JSON.parse($scope.chartoptions);
+        sharedProperties.initialOptions(optSet);
+        //do this in sharedPropreties and cache for later
+        //this is where the directive should be loaded
+        $scope.chartset = d3.map(optSet['charts']).keys();
+        jQuery.each($scope.chartset, function(i,v){
+          $(".chartsection").append('<div class="container" data-title="' + v + '" id="' + v + '" chart="chart"><div>');
+        });
+
+        /* Get angular to process this block */
+        var fnLink = $compile($(".chartsection"));     // returns a Link function used to bind template to the scope
+        fnLink($scope);  
+    }
+
 
     if ($scope.dataviewurl && $scope.chartoptions){
       dataService.loadSample($scope.dataviewurl).then(
@@ -191,19 +203,8 @@ angular.module('raw.controllers', [])
           $scope.text = data;
           var temploadwatch = $scope.$watch('loading', function (loading){
             if (loading == false){
-              var optSet = JSON.parse($scope.chartoptions);
-              sharedProperties.initialOptions(optSet);
-              //do this in sharedPropreties and cache for later
-              //this is where the directive should be loaded
-              $scope.chartset = d3.map(optSet['charts']).keys();
-              jQuery.each($scope.chartset, function(i,v){
-                $(".chartsection").append('<div class="container" data-title="' + v + '" id="' + v + '" class="dataTitle" chart="chart"><div>');
-              });
-
-              /* Get angular to process this block */
-              var fnLink = $compile($(".chartsection"));     // returns a Link function used to bind template to the scope
-              fnLink($scope);                                 // Bind Scope to the template
-              
+                               // Bind Scope to the template
+              buildFromOpts();
                       
               //only run once
               temploadwatch();
@@ -235,55 +236,19 @@ angular.module('raw.controllers', [])
     // };
 
 
-    // $scope.fetchOptions = function(){
-    //   //need JSON fallback
-    //   outputobj = {"charts":{}, "dataSource":$scope.dataviewurl};
-    //   $scope.chartset.forEach(function(i,v){
-    //     outputobj["charts"][i] =  {
-    //       "chartType": $scope.chartset[i].chart.title(),
-    //       "dimensions": $scope.chartset[i].modelstore.getOptions(),
-    //       "chartOptions": $scope.chartset[i].chart.getOptions()
-    //     };
-    //   });
-    //   $scope.chartoptions = JSON.stringify(outputobj);
-    //   return;
-    // };
+    $scope.fetchOptions = function(){
+      //need JSON fallback
+      var outputobj = {"charts":sharedProperties.getOptionsObj(), "dataSource":$scope.dataviewurl};
 
+      $scope.chartoptions = JSON.stringify(outputobj);
+      return;
+    };
+
+    $scope.runOptions = function(){
+      sharedProperties.destroyAllCharts();
+      buildFromOpts();
+    };
     
-
-    // $scope.runOptions = function(){
-    //   //should disable all user options when this is set to true
-
-    //   //only need to parse this once and cache it
-    //   var optSet = JSON.parse($scope.chartoptions);
-    //   $scope.tempstopwatch = true;
-    //   jQuery.each(optSet['charts'], function(chartname,chartopts){
-    //     //should already be set up
-    //     $scope.chartset[chartname].modelstore.clear();
-    //     //find the chart name
-    //     $.each($scope.charts, function(i,v){
-    //       if (v.title() == chartopts['chartType']){
-    //         //I think we need to do a deep copy of the obj
-    //         console.log(v);
-    //         $scope.chartset[chartname] = {'chart': jQuery.extend(true, {}, v)};
-    //         $scope.chartset[chartname].modelstore = $scope.chartset[chartname].chart.model();
-    //         return false;
-    //       }
-    //     });
-    //     $scope.chartset[chartname].modelstore.setOptions(chartopts['dimensions']);
-    //     $scope.$apply();
-    //     $scope.chartset[chartname].chart.setOptions(chartopts['chartOptions'], $scope);
-    //   });
-    //   //get the dataviewurl
-    //   $scope.tempstopwatch = false;
-    //   //this should only emit to the proper chart element not all chart elements
-    //   $scope.$emit('update');
-
-    // };
-
-
-
-
     $(document).ready(refreshScroll);
 
 

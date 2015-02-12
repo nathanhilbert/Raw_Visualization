@@ -67,7 +67,7 @@ angular.module('raw.services', [])
 		var data = null;
 		var metadata = null;
 		var charts = {};
-		var isoscopes = {};
+		var models = {}
 
 		return {
 			initialCharts: function(rawCharts){
@@ -97,15 +97,35 @@ angular.module('raw.services', [])
 			getData: function(){
 				return data;
 			},
-			appendChart: function(chartname, chartobj, scope){
+			appendChart: function(chartname, chartobj, modelobj){
 				charts[chartname] = chartobj;
-				isoscopes[chartname] = scope;
+				models[chartname] = modelobj
 			},
 			getChart: function(chartname){
 				return charts[chartname];
 			},
-			getScope: function(chartname){
-				return isoscopes[chartname];
-			}
+			getOptionsObj: function(){
+				var tempoutput = {};
+				jQuery.each(charts, function(i,v){
+			        tempoutput[i] = {
+			          "chartType": charts[i].title(),
+			          "dimensions": models[i].getOptions(),
+			          "chartOptions": charts[i].getOptions()
+			        };
+			    });
+			    return tempoutput;
+		    },
+		    runOptionsObj: function(){
+
+		    },
+		    destroyAllCharts: function(){
+		    	var tempchartskey = d3.map(charts).keys();
+		    	jQuery.each(tempchartskey, function(index,chartname){
+			    	$("#" + chartname).remove();
+			    	delete charts[chartname];
+			    	delete models[chartname];
+		    	});
+		    }
+			
 		};
     });
