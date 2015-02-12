@@ -45,11 +45,6 @@ angular.module('raw.controllers', [])
 
     $scope.parse = function(text){
 
-      // jQuery.each($scope.chartset, function(i,v){
-      //     if (v.modelstore) v.modelstore.clear();
-      // });
-
-
       $scope.data = [];
       $scope.metadata = [];
       $scope.error = false;
@@ -67,11 +62,7 @@ angular.module('raw.controllers', [])
       }
       sharedProperties.initialData($scope.data, $scope.metadata);
 
-      // if (!$scope.data.length){
-      //   jQuery.each($scope.chartset, function(i,v){
-      //       if (v.modelstore) v.modelstore.clear();
-      //   });
-      // }
+
       $scope.loading = false;
     }
 
@@ -85,13 +76,7 @@ angular.module('raw.controllers', [])
     //$scope.charts = raw.charts.values().sort(function (a,b){ return a.title() < b.title() ? -1 : a.title() > b.title() ? 1 : 0; })
     sharedProperties.initialCharts(raw.charts);
     
-    $scope.chartset = [];
-
-    // var appendNewChart = function(chartkey){
-    //   $scope.chartset[chartkey] = {};
-    //   $scope.chartset[chartkey].chart = $scope.charts[0];
-    //   $scope.chartset[chartkey].modelstore = $scope.chartset[chartkey].chart ? $scope.chartset[chartkey].chart.model() : null;
-    // };
+    $scope.charts = raw.charts.values();
 
 
     $scope.$watch('error', function (error){
@@ -135,43 +120,43 @@ angular.module('raw.controllers', [])
       });
     }
 
-    // $(window).scroll(function(){
+    $(window).scroll(function(){
 
-    //   // check for mobile
-    //   if ($(window).width() < 760 || $('#mapping').height() < 300) return;
+      // check for mobile
+      if ($(window).width() < 760 || $('#mapping').height() < 300) return;
 
-    //   var scrollTop = $(window).scrollTop() + 0,
-    //       mappingTop = $('#mapping').offset().top + 10,
-    //       mappingHeight = $('#mapping').height(),
-    //       isBetween = scrollTop > mappingTop + 50 && scrollTop <= mappingTop + mappingHeight - $(".sticky").height() - 20,
-    //       isOver = scrollTop > mappingTop + mappingHeight - $(".sticky").height() - 20,
-    //       mappingWidth = mappingWidth ? mappingWidth : $('.col-lg-9').width();
+      var scrollTop = $(window).scrollTop() + 0,
+          mappingTop = $('#mapping').offset().top + 10,
+          mappingHeight = $('#mapping').height(),
+          isBetween = scrollTop > mappingTop + 50 && scrollTop <= mappingTop + mappingHeight - $(".sticky").height() - 20,
+          isOver = scrollTop > mappingTop + mappingHeight - $(".sticky").height() - 20,
+          mappingWidth = mappingWidth ? mappingWidth : $('.col-lg-9').width();
      
-    //   if (mappingHeight-$('.dimensions-list').height() > 90) return;
-    //   //console.log(mappingHeight-$('.dimensions-list').height())
-    //   if (isBetween) {
-    //     $(".sticky")
-    //       .css("position","fixed")
-    //       .css("width", mappingWidth+"px")
-    //       .css("top","20px")
-    //   } 
+      if (mappingHeight-$('.dimensions-list').height() > 90) return;
+      //console.log(mappingHeight-$('.dimensions-list').height())
+      if (isBetween) {
+        $(".sticky")
+          .css("position","fixed")
+          .css("width", mappingWidth+"px")
+          .css("top","20px")
+      } 
 
-    //  if(isOver) {
-    //     $(".sticky")
-    //       .css("position","fixed")
-    //       .css("width", mappingWidth+"px")
-    //       .css("top", (mappingHeight - $(".sticky").height() + 0 - scrollTop+mappingTop) + "px");
-    //       return;
-    //   }
+     if(isOver) {
+        $(".sticky")
+          .css("position","fixed")
+          .css("width", mappingWidth+"px")
+          .css("top", (mappingHeight - $(".sticky").height() + 0 - scrollTop+mappingTop) + "px");
+          return;
+      }
 
-    //   if (isBetween) return;
+      if (isBetween) return;
 
-    //   $(".sticky")
-    //     .css("position","relative")
-    //     .css("top","")
-    //     .css("width", "");
+      $(".sticky")
+        .css("position","relative")
+        .css("top","")
+        .css("width", "");
 
-    // })
+    })
 
 
     //let's register our options here
@@ -220,7 +205,42 @@ angular.module('raw.controllers', [])
 
     $scope.chart_view_editing = true;
 
-    //append with this
+    //TO DO need to fix this not showing
+    $scope.enterTempDesc = function(temptitle, tempdescription){
+      $scope.temptitle = temptitle;
+      $scope.tempdescription = tempdescription;
+    }
+
+    $scope.exitTempDesc = function(){
+      $scope.temptitle = null;
+      $scope.tempdescription = null;
+    }
+
+    $scope.dimensionschart = null;
+
+    $scope.selectChart = function(selectedchart){
+      //create a chart with all of the default options
+      $scope.dimensionschart = selectedchart.chartfunc();
+      $scope.dimensionsmodel = $scope.dimensionschart.model();
+
+      //show dimensions
+    };
+
+    $scope.createNewChart = function(){
+      //make sure that dimensionschartname is set first
+      sharedProperties.appendChart($scope.dimensionschartname, $scope.dimensionschart, $scope.dimensionsmodel);
+
+
+      $(".chartsection").append('<div class="container" data-title="' + $scope.dimensionschartname + '" id="' + $scope.dimensionschartname + '" chart="chart"><div>');
+
+
+        /* Get angular to process this block */
+        var fnLink = $compile($("#" + $scope.dimensionschartname));     // returns a Link function used to bind template to the scope
+        fnLink($scope);
+        $scope.dimensionschartname = null;
+        $scope.dimensionsmodel = null;
+        $scope.dimensionschart = null;
+    };
 
 
 
@@ -245,6 +265,7 @@ angular.module('raw.controllers', [])
     };
 
     $scope.runOptions = function(){
+      //memory leak here need to destory other stuff maybe? ~500k
       sharedProperties.destroyAllCharts();
       buildFromOpts();
     };

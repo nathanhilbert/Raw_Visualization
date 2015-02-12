@@ -28,32 +28,28 @@ angular.module('raw.directives', [])
 
 	      	scope.chartkey = attrs['title'];
 
+	      	if (sharedProperties.chartExists(scope.chartkey)){
+	      		//it exists in our settings
+	      		scope.chart = sharedProperties.getChart(scope.chartkey);
+	      		scope.modelstore = sharedProperties.getModel(scope.chartkey);
+	      		
+	      	}
+	      	else{
+	      		//load from out settings
 
-	      	scope.chart = sharedProperties.getDefaultChart(scope.chartkey);
+		      	scope.chart = sharedProperties.getDefaultChart(scope.chartkey);
 
-	      	scope.modelstore = scope.chart.model();
+		      	scope.modelstore = scope.chart.model();
 
-	      	scope.chartsettings = sharedProperties.getOptions(scope.chartkey)
+		      	scope.chartsettings = sharedProperties.getOptions(scope.chartkey)
 
-	      	scope.modelstore.setOptions(scope.chartsettings['dimensions']);
-	      	//scope.$apply();
-	      	scope.chart.setOptions(scope.chartsettings['chartOptions']);
+		      	scope.modelstore.setOptions(scope.chartsettings['dimensions']);
 
-	      	sharedProperties.appendChart(scope.chartkey, scope.chart, scope.modelstore);
+		      	scope.chart.setOptions(scope.chartsettings['chartOptions']);
 
+	      		sharedProperties.appendChart(scope.chartkey, scope.chart, scope.modelstore);
+	      	}
 
-
-		    //   jQuery.each(optSet['charts'], function(chartname,chartopts){
-
-
-		      //   $scope.chartset[chartname].modelstore.setOptions(chartopts['dimensions']);
-		      //   $scope.$apply();
-		      //   $scope.chartset[chartname].chart.setOptions(chartopts['chartOptions'], $scope);
-		      // });
-		      // //get the dataviewurl
-		      // $scope.tempstopwatch = false;
-		      // //this should only emit to the proper chart element not all chart elements
-		      // $scope.$emit('update');
 
 
 	        function update(){

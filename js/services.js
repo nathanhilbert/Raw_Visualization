@@ -1,18 +1,6 @@
 'use strict';
 
 
-Function.prototype.clone = function() {
-    var that = this;
-    var temp = function temporary() { return that.apply(this, arguments); };
-    for(var key in this) {
-        if (this.hasOwnProperty(key)) {
-            temp[key] = this[key];
-        }
-    }
-    return temp;
-};
-
-
 /* Services */
 
 angular.module('raw.services', [])
@@ -84,7 +72,7 @@ angular.module('raw.services', [])
 				var tempreturn;
 		        raw.charts.forEach(function(i,v){
 		          if (i == optSet['charts'][chartname]['chartType']){
-		          	tempreturn = v();
+		          	tempreturn = v.chartfunc();
 		          	return false;
 		          }
 		        });
@@ -101,8 +89,14 @@ angular.module('raw.services', [])
 				charts[chartname] = chartobj;
 				models[chartname] = modelobj
 			},
+			chartExists: function(chartname){
+				return charts.hasOwnProperty(chartname);
+			},
 			getChart: function(chartname){
 				return charts[chartname];
+			},
+			getModel: function(chartname){
+				return models[chartname];
 			},
 			getOptionsObj: function(){
 				var tempoutput = {};
