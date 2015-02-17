@@ -60,7 +60,7 @@ angular.module('raw.services', [])
 
 		return {
 			initialCharts: function(rawCharts){
-				defaultCharts = rawCharts.values().sort(function (a,b){ return a.title() < b.title() ? -1 : a.title() > b.title() ? 1 : 0; })
+				defaultCharts = rawCharts.values().sort(function (a,b){ return a.title < b.title ? -1 : a.title > b.title ? 1 : 0; })
 			},
 			initialOptions: function(optSetArg){
 				optSet = optSetArg;

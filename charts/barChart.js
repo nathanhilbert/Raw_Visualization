@@ -1,20 +1,58 @@
-raw.charts.set('Scatter Plot', {
-    title: "Scatter Plot",
-    thumbnail: 'imgs/scatterPlot.png',
-    description: "A scatter plot, scatterplot, or scattergraph is a type of mathematical diagram using Cartesian coordinates to display values for two variables for a set of data. The data is displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. This kind of plot is also called a scatter chart, scattergram, scatter diagram, or scatter graph.",
+raw.charts.set('Bar Chart', {
+    title: "Bar Chart",
+    thumbnail: 'imgs/barChart.png',
+    description: "A bar chart",
     category: "Distributions",
     chartfunc: function(){
 
+    	var barsmodel = function(){
 
-		var points = raw.models.points();
+		    var bars = raw.model();
+
+		    var x = bars.dimension('x')
+		      .title("X Axis")
+		      .types(Number, Date)
+		      .accessor(function (d){ return this.type() == "Date" ? new Date(d) : +d; })
+		      .required(1)
+
+		    var size = bars.dimension('size')
+		      .title("Size")
+		      .multiple(true)
+		      .types(Number)
+		      .required(1)
+
+		    // var color = points.dimension('color')
+		    //   .title("Color")
+
+		    var label = bars.dimension('label')
+		      .title("Label")
+		      .multiple(true)
+
+		    bars.map(function (data){
+		      return data.map(function (d){
+		        return {
+		          x : x(d),
+		          size : size() ? +size(d) : 1,
+		          label : label(d)
+		        }
+		      })
+		    })
+
+		    return bars;
+
+		  };
+
+
+
+		var bars = barsmodel();
 
 		var chart = raw.chart()
-			.title('Scatter Plot')
+			.title('Bar Chart')
 			.description(
-	            "A scatter plot, scatterplot, or scattergraph is a type of mathematical diagram using Cartesian coordinates to display values for two variables for a set of data. The data is displayed as a collection of points, each having the value of one variable determining the position on the horizontal axis and the value of the other variable determining the position on the vertical axis. This kind of plot is also called a scatter chart, scattergram, scatter diagram, or scatter graph.")
-			.thumbnail("imgs/scatterPlot.png")
+	            "A bar chart")
+			.thumbnail("imgs/barChart.png")
 		    .category('Distributions')
-			.model(points)
+			.model(bars)
 
 		var width = chart.number()
 			.title("Width")
@@ -25,26 +63,22 @@ raw.charts.set('Scatter Plot', {
 			.title("Height")
 			.defaultValue(500)
 
-		var maxRadius = chart.number()
-			.title("max radius")
+		var widthColumn = chart.number()
+			.title("Width Column")
 			.defaultValue(20)
 
-		var useZero = chart.checkbox()
-			.title("set origin at (0,0)")
-			.defaultValue(false)
+		var verticalDisplay = chart.checkbox()
+			.title("Vertical Display")
+			.defaultValue(true)
 
 		var colors = chart.color()
 			 .title("Color scale")
 
-		var showPoints = chart.checkbox()
-			.title("show points")
-			.defaultValue(true)
 
 		chart.draw(function (selection, data){
 
 			// Retrieving dimensions from model
-			var x = points.dimensions().get('x'),
-				y = points.dimensions().get('y');
+			var x = bars.dimensions().get('x');
 				
 			var g = selection
 				.attr("width", +width() )
@@ -56,18 +90,20 @@ raw.charts.set('Scatter Plot', {
 				w = width() - marginLeft,
 				h = height() - marginBottom;
 
-			var xExtent = !useZero()? d3.extent(data, function (d){ return d.x; }) : [0, d3.max(data, function (d){ return d.x; })],
-				yExtent = !useZero()? d3.extent(data, function (d){ return d.y; }) : [0, d3.max(data, function (d){ return d.y; })];
+			var barWidth = Math.floor(w / 19) - 1;
+
+			var xExtent = d3.extent(data, function (d){ return d.x; }),
+				yExtent = d3.extent(data, function (d){ return d.size; });
 
 			var xScale = x.type() == "Date"
 					? d3.time.scale().range([marginLeft,width()-maxRadius()]).domain(xExtent)
 					: d3.scale.linear().range([marginLeft,width()-maxRadius()]).domain(xExtent),
-				yScale = y.type() == "Date"
-					? d3.time.scale().range([h-maxRadius(), maxRadius()]).domain(yExtent)
-					: d3.scale.linear().range([h-maxRadius(), maxRadius()]).domain(yExtent),
-				sizeScale = d3.scale.linear().range([1, Math.pow(+maxRadius(),2)*Math.PI]).domain([0, d3.max(data, function (d){ return d.size; })]),
-				xAxis = d3.svg.axis().scale(xScale).tickSize(-h+maxRadius()*2).orient("bottom")//.tickSubdivide(true),
-	    		yAxis = d3.svg.axis().scale(yScale).ticks(10).tickSize(-w+maxRadius()).orient("left");
+			
+			var yScale = d3.scale.linear().range([h-maxRadius(), maxRadius()]).domain(yExtent);
+
+				//sizeScale = d3.scale.linear().range([1, Math.pow(+maxRadius(),2)*Math.PI]).domain([0, d3.max(data, function (d){ return d.size; })]),
+			var xAxis = d3.svg.axis().scale(xScale).tickSize(-h+maxRadius()*2).orient("bottom");//.tickSubdivide(true),
+    		var yAxis = d3.svg.axis().scale(yScale).ticks(10).tickSize(-w+maxRadius()).orient("left");
 
 
 	        g.append("g")
