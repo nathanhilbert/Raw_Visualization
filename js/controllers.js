@@ -203,7 +203,6 @@ angular.module('raw.controllers', [])
       );
     }
 
-    $scope.chart_view_editing = true;
 
     //TO DO need to fix this not showing
     $scope.enterTempDesc = function(temptitle, tempdescription){
@@ -245,17 +244,6 @@ angular.module('raw.controllers', [])
 
 
 
-
-    // $scope.toggleEdit = function(chartkey){
-    //   if ($scope.chart_view_editing == true){
-    //     $scope.chart_view_editing = false;
-    //   }
-    //   else{
-    //     $scope.chart_view_editing = true;
-    //   }
-    // };
-
-
     $scope.fetchOptions = function(){
       //need JSON fallback
       var outputobj = {"charts":sharedProperties.getOptionsObj(), "dataSource":$scope.dataviewurl};
@@ -269,6 +257,7 @@ angular.module('raw.controllers', [])
       sharedProperties.destroyAllCharts();
       buildFromOpts();
     };
+
     
     $(document).ready(refreshScroll);
 
