@@ -56,6 +56,7 @@ angular.module('raw.services', [])
 		var metadata = null;
 		var charts = {};
 		var models = {}
+		var currentEditChart = null;
 
 		return {
 			initialCharts: function(rawCharts){
@@ -119,6 +120,19 @@ angular.module('raw.services', [])
 			    	delete charts[chartname];
 			    	delete models[chartname];
 		    	});
+		    },
+		    editChartDimensions: function(chartkey){
+
+		    },
+		    saveChartDimensions: function(attrs){
+		    	//get the settings
+		    },
+		    exportChart: function(chartkey){
+
+		    },
+		    setEditChart: function(chartkey){
+		    	//if null then it sets to null
+		    	currentEditChart = chartkey;
 		    }
 			
 		};

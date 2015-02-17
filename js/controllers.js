@@ -217,10 +217,12 @@ angular.module('raw.controllers', [])
 
     $scope.dimensionschart = null;
 
+
     $scope.selectChart = function(selectedchart){
       //create a chart with all of the default options
       $scope.dimensionschart = selectedchart.chartfunc();
       $scope.dimensionsmodel = $scope.dimensionschart.model();
+      $scope.currentdimensionedit = null;
 
       //show dimensions
     };

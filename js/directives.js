@@ -4,6 +4,8 @@
 
 var globalscope = null;
 var colorscope = null;
+var sortablescope = null;
+var sortitem = null;
 
 angular.module('raw.directives', [])
 
@@ -119,6 +121,40 @@ angular.module('raw.directives', [])
           }
         };
       })
+    .directive('chartDimensionsEdit', function (sharedProperties) {
+        return {
+          restrict: 'A',
+          template: '<button>Edit Dimensions</button>',
+          transclude: true,
+          link: function postLink(scope, element, attrs) {
+            //taking the same scope as parent
+            element.on("click", function () {
+                //parent scope must be the chart
+                scope.$parent.dimensionschart = scope.chart;
+                scope.$parent.dimensionsmodel = scope.modelstore;
+                sharedProperties.setEditChart(scope.chartkey);
+                scope.$parent.$digest();
+                // console.log(scope.$parent);
+                // sharedProperties.editChartDimensions(scope.chartkey);
+            });
+
+          }
+        };
+      })
+    .directive('chartExport', function (sharedProperties) {
+        return {
+          restrict: 'A',
+          template: '<button>Export</button>',
+          transclude: true,
+          link: function postLink(scope, element, attrs) {
+            //taking the same scope as parent
+            element.on("click", function () {
+                sharedProperties.editChartDimensions(scope.chartkey);
+            });
+
+          }
+        };
+      })
 
     .directive('chartOption', function (sharedProperties) {
         return {
@@ -180,30 +216,6 @@ angular.module('raw.directives', [])
                     reset : function(domain){ this.value.range(raw.divergingRange(domain.length || 1)); },
                     update : ordinalUpdate
                 },
-                /*{
-                    type : 'Ordinal (max 20 categories)',
-                    value : d3.scale.category20(),
-                    reset : function(){ this.value.range(d3.scale.category20().range().map(function (d){ return d; })); },
-                    update : ordinalUpdate
-                },
-                {
-                    type : 'Ordinal B (max 20 categories)',
-                    value : d3.scale.category20b(),
-                    reset : function(){ this.value.range(d3.scale.category20b().range().map(function (d){ return d; })); },
-                    update : ordinalUpdate
-                },
-                {
-                    type : 'Ordinal C (max 20 categories)',
-                    value : d3.scale.category20c(),
-                    reset : function(){ this.value.range(d3.scale.category20c().range().map(function (d){ return d; })); },
-                    update : ordinalUpdate
-                },
-                {
-                    type : 'Ordinal (max 10 categories)',
-                    value : d3.scale.category10(),
-                    reset : function(){ this.value.range(d3.scale.category10().range().map(function (d){ return d; })); },
-                    update : ordinalUpdate
-                },*/
                 {
                     type : 'Linear (numeric)',
                     value : d3.scale.linear().range(["#f7fbff", "#08306b"]),
@@ -280,7 +292,7 @@ angular.module('raw.directives', [])
         };
       })
 
-    .directive('sortable', function ($rootScope) {
+    .directive('sortable', function ($rootScope, sharedProperties) {
     return {
       restrict: 'A',
       scope : {
@@ -304,7 +316,7 @@ angular.module('raw.directives', [])
             remove: onRemove,
             over: over,
             tolerance:'intersect'
-          })
+          });
 
           function over(e,ui){
                 var dimension = ui.item.data().dimension,
@@ -340,18 +352,50 @@ angular.module('raw.directives', [])
                 element.parent().css("overflow","hidden");
 
                     var dimension = ui.item.data().dimension;
+
                 ui.item.toggleClass("invalid", !isValidType(dimension))
                 message();
+
+
 
                 $rootScope.$broadcast("update");
             }
 
+            function appendItem(item){
+                var newitem = item.clone();
+                newitem.appendTo(element);
+
+                newitem.find('.dimension-icon').remove();
+
+                if (newitem.find('span.remove').length == 0) {
+                    newitem.append("<span class='remove pull-right'>&times;</span>")
+                  }
+                
+                 
+                newitem.find('span.remove').click(function(){  newitem.remove(); onRemove(); });
+
+                element.append(newitem);     
+
+            }
+
+            scope.firstrun = true;
+
             scope.$watch('value', function (value){
+
                 if (!value.length) {
                     element.find('li').remove();
+                    scope.firstrun = false;
+                }
+                else if (scope.firstrun){
+                    jQuery.each(value, function(i,v){
+                       appendItem($('*[data-dimensionkey="' + v.key + '"]'));
+                    });
+                    scope.firstrun = false;
+                    
                 }
                 message();
             })
+
 
             function onReceive(e,ui) {
                     var dimension = ui.item.data().dimension;
@@ -373,6 +417,7 @@ angular.module('raw.directives', [])
             }
 
             function onRemove(e,ui) {
+
                 scope.value = values();
                 scope.$apply();
                 }
@@ -410,6 +455,8 @@ angular.module('raw.directives', [])
                     //element.parent().find('.msg').html(messageText);
                 }
 
+
+
       }
     }
    })
@@ -418,14 +465,14 @@ angular.module('raw.directives', [])
         return {
           restrict: 'A',
           scope:false,
-        //  templateUrl : 'templates/dimensions.html',
+        //  template : 'templates/dimensions.html',
           link: function postLink(scope, element, attrs) {
 
               scope.$watch('metadata', function(metadata){
                 if(!metadata.length) element.find('li').remove();
                   element.find('li').draggable({
                     connectToSortable:'.dimensions-container',
-                        helper : 'clone',
+                    helper : 'clone',
                     revert: 'invalid',
                     start : onStart
                   })

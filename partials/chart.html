@@ -50,7 +50,9 @@
                 <div class="chartdiv"></div>
                 <!-- <div ng-show="modelstore.isValid()" class="chartdiv"></div> -->
             </div>
-            <button chart-view-edit chartname="{{chartkey}}">Edit</button>
+            <button chart-view-edit >Edit View</button>
+            <button chart-dimensions-edit >Edit Dimensions</button>
+            <button chart-export >Export Chart</button>
             <div class="text-muted text-center" ng-show="!modelstore.isValid()">
                 <!--<i class="fa fa-hand-o-up breath-right"></i>-->
                 <h4><span ng-bind-html="modelstore.instruction()"></span></h4>
