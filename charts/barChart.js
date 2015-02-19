@@ -1,3 +1,8 @@
+var globalselection = null;
+var globaldata = null;
+var globalbyYears = null;
+var globaldim = null;
+
 raw.charts.set('Bar Chart', {
     title: "Bar Chart",
     thumbnail: 'imgs/barChart.png',
@@ -29,13 +34,13 @@ raw.charts.set('Bar Chart', {
 		      .multiple(true)
 
 		    bars.map(function (data){
-		      return data.map(function (d){
+		      return crossfilter(data.map(function (d){
 		        return {
 		          x : x(d),
 		          size : size() ? +size(d) : 1,
 		          label : label(d)
 		        }
-		      })
+		      }))
 		    })
 
 		    return bars;
@@ -79,27 +84,45 @@ raw.charts.set('Bar Chart', {
 
 			// Retrieving dimensions from model
 			var x = bars.dimensions().get('x');
+
+			globalselection = selection;
+			globaldata = data;
+
+			  // Create the crossfilter for the relevant dimensions and groups.
+
+			var all = data.groupAll(),
+			      byYear = data.dimension(function(d) { return d.x}),
+			      byYears = byYear.group().reduceSum(function(d) { return d.size; });
+
+			 globaldim = byYear;
+			 globalbyYears = byYears;
 				
 			var g = selection
 				.attr("width", +width() )
 				.attr("height", +height() )
 				.append("g")
 
-			var marginLeft = d3.max([maxRadius(),(d3.max(data, function (d) { return (Math.log(d.y) / 2.302585092994046) + 1; }) * 9)]),
+			var maxRadius = function(){
+				return 0;
+			}
+
+			var marginLeft = 20,
 				marginBottom = 20,
 				w = width() - marginLeft,
 				h = height() - marginBottom;
 
 			var barWidth = Math.floor(w / 19) - 1;
 
-			var xExtent = d3.extent(data, function (d){ return d.x; }),
-				yExtent = d3.extent(data, function (d){ return d.size; });
+			var xExtent = d3.extent(byYears.all(), function (d){ return d.key; }),
+				yExtent = d3.extent(byYears.all(), function (d){ return d.value; });
 
 			var xScale = x.type() == "Date"
 					? d3.time.scale().range([marginLeft,width()-maxRadius()]).domain(xExtent)
-					: d3.scale.linear().range([marginLeft,width()-maxRadius()]).domain(xExtent),
+					: d3.scale.linear().range([marginLeft,width()-maxRadius()]).domain(xExtent);
 			
-			var yScale = d3.scale.linear().range([h-maxRadius(), maxRadius()]).domain(yExtent);
+			var yScale = d3.scale.linear().range([h,0]).domain(yExtent);
+
+			var sizeScale = d3.scale.linear().range([0,h]).domain(yExtent);
 
 				//sizeScale = d3.scale.linear().range([1, Math.pow(+maxRadius(),2)*Math.PI]).domain([0, d3.max(data, function (d){ return d.size; })]),
 			var xAxis = d3.svg.axis().scale(xScale).tickSize(-h+maxRadius()*2).orient("bottom");//.tickSubdivide(true),
@@ -127,37 +150,50 @@ raw.charts.set('Bar Chart', {
 	         	.style("fill","none")
 	         	.style("stroke","#ccc")
 
-			var circle = g.selectAll("g.circle")
-				.data(data)
+          // g.selectAll("g.bar")
+          //     .data(["background", "foreground"])
+          //   .enter().append("path")
+          //     .attr("class", function(d) { return d + " bar"; })
+          //     .datum(byYears.all());
+
+	        // g.selectAll("g.bar")
+         //      .append("path")
+         //      .attr("class", function(d) { return d + " bar"; })
+         //      .datum(byYears.all());
+
+
+			var bar = g.selectAll("g.bar")
+				.data(byYears.all())
 				.enter().append("g")
-				.attr("class","circle")
+					.attr("class","bar")
+					.style("fill", function(d) { return colors() ? colors()(d.color) : "#eeeeee"; })
+	            	.style("fill-opacity", .9)
+	    	    	.attr("transform", function(d, i) { return "translate(" + xScale(d.key) + "," + yScale(d.value) + ")"; })
+				.append("rect")
+	              .attr("width", 20)
+	              .attr("height", function(d){ return sizeScale(d.value);});
 
-			var point = g.selectAll("g.point")
-				.data(data)
-				.enter().append("g")
-				.attr("class","point")
+			//colors.domain(data, function(d){ return d.color; });
 
-			colors.domain(data, function(d){ return d.color; });
+	    	// bar.append("bar")
+	     //        .style("fill", function(d) { return colors() ? colors()(d.color) : "#eeeeee"; })
+	     //        .style("fill-opacity", .9)
+	    	//     .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.size) + ")"; })
+	    	// .append("rect")
+      //         .attr("width", 20)
+      //         .attr("height", 100);
 
-	    	circle.append("circle")
-	            .style("fill", function(d) { return colors() ? colors()(d.color) : "#eeeeee"; })
-	            .style("fill-opacity", .9)
-	    	    .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; })
-	    	    .attr("r", function (d){ return Math.sqrt(sizeScale(d.size)/Math.PI); });
 
-	    	point.append("circle")
-	            .filter(function(){ return showPoints(); })
-	            .style("fill", "#000")
-	            .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; })
-	            .attr("r", 1);
 
-	    	circle.append("text")
-	    	    .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; })
-	    		.attr("text-anchor", "middle")
-	    		.style("font-size","10px")
-	    		.attr("dy", 15)
-	    		.style("font-family","Arial, Helvetica")
-	    	  	.text(function (d){ return d.label? d.label.join(", ") : ""; });
+	    	    //.attr("r", function (d){ return Math.sqrt(sizeScale(d.size)/Math.PI); });
+
+	    	// circle.append("text")
+	    	//     .attr("transform", function(d) { return "translate(" + xScale(d.x) + "," + yScale(d.y) + ")"; })
+	    	// 	.attr("text-anchor", "middle")
+	    	// 	.style("font-size","10px")
+	    	// 	.attr("dy", 15)
+	    	// 	.style("font-family","Arial, Helvetica")
+	    	//   	.text(function (d){ return d.label? d.label.join(", ") : ""; });
 
 		});
 		return chart;
