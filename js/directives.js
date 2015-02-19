@@ -155,6 +155,20 @@ angular.module('raw.directives', [])
           }
         };
       })
+    .directive('chartRemove', function (sharedProperties) {
+        return {
+          restrict: 'A',
+          template: '<button>Remove Chart</button>',
+          transclude: true,
+          link: function postLink(scope, element, attrs) {
+            //taking the same scope as parent
+            element.on("click", function () {
+                sharedProperties.removeChart(scope.chartkey);
+            });
+
+          }
+        };
+      })
 
     .directive('chartOption', function (sharedProperties) {
         return {
