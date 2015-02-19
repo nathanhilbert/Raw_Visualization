@@ -58,6 +58,12 @@ angular.module('raw.services', [])
 		var models = {}
 		var currentEditChart = null;
 
+		var removeChart = function(index,chartname){
+			    	$("#" + chartname).remove();
+			    	delete charts[chartname];
+			    	delete models[chartname];
+		    	}
+
 		return {
 			initialCharts: function(rawCharts){
 				defaultCharts = rawCharts.values().sort(function (a,b){ return a.title < b.title ? -1 : a.title > b.title ? 1 : 0; })
@@ -110,16 +116,9 @@ angular.module('raw.services', [])
 			    });
 			    return tempoutput;
 		    },
-		    runOptionsObj: function(){
-
-		    },
 		    destroyAllCharts: function(){
 		    	var tempchartskey = d3.map(charts).keys();
-		    	jQuery.each(tempchartskey, function(index,chartname){
-			    	$("#" + chartname).remove();
-			    	delete charts[chartname];
-			    	delete models[chartname];
-		    	});
+		    	jQuery.each(tempchartskey, removeChart);
 		    },
 		    editChartDimensions: function(chartkey){
 
@@ -133,6 +132,9 @@ angular.module('raw.services', [])
 		    setEditChart: function(chartkey){
 		    	//if null then it sets to null
 		    	currentEditChart = chartkey;
+		    },
+		    removeChart: function(chartkey){
+		    	removeChart(null, chartkey);
 		    }
 			
 		};
