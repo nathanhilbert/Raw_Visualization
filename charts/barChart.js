@@ -34,13 +34,13 @@ raw.charts.set('Bar Chart', {
 		      .multiple(true)
 
 		    bars.map(function (data){
-		      return data.map(function (d){
+		      return crossfilter(data.map(function (d){
 		        return {
 		          x : x(d),
 		          size : size() ? +size(d) : 1,
 		          label : label(d)
 		        }
-		      })
+		      }))
 		    })
 
 		    return bars;
@@ -89,9 +89,9 @@ raw.charts.set('Bar Chart', {
 			globaldata = data;
 
 			  // Create the crossfilter for the relevant dimensions and groups.
-			  var mydata = crossfilter(data),
-			      all = mydata.groupAll(),
-			      byYear = mydata.dimension(function(d) { return d.x}),
+
+			var all = data.groupAll(),
+			      byYear = data.dimension(function(d) { return d.x}),
 			      byYears = byYear.group().reduceSum(function(d) { return d.size; });
 
 			 globaldim = byYear;
@@ -173,7 +173,7 @@ raw.charts.set('Bar Chart', {
 	              .attr("width", 20)
 	              .attr("height", function(d){ return sizeScale(d.value);});
 
-			colors.domain(data, function(d){ return d.color; });
+			//colors.domain(data, function(d){ return d.color; });
 
 	    	// bar.append("bar")
 	     //        .style("fill", function(d) { return colors() ? colors()(d.color) : "#eeeeee"; })
