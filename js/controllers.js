@@ -6,38 +6,57 @@ var controlscope = null;
 
 angular.module('raw.controllers', [])
 
-  .controller('RawCtrl', function ($scope, $compile, dataService, sharedProperties) {
-    controlscope = $scope;
-
-    $scope.samples = [
-      { title : 'Cars (multivariate)', url : 'data/multivariate.csv' },
-      { title : 'Movies (dispersions)', url : 'data/dispersions.csv' },
-      { title : 'Music (flows)', url : 'data/flows.csv' },
-      { title : 'Cocktails (correlations)', url : 'data/correlations.csv' }
-    ]
-
-    $scope.dataviewurl = "http://localhost:5000/api/slicer/cube/geometry/cubes_aggregate?cubes=sci_articles&drilldown=geometry__country_level0@name|geometry__country_level0@dos_level1|sci_articles__time&format=csv";
-
-    $scope.addDataView = function(){
-      $scope.sample = {title:"MyDataViz", url:$scope.dataviewurl};
-    };
-
-    $scope.$watch('sample', function (sample){
-      if (!sample) return;
-      dataService.loadSample(sample.url).then(
-        function(data){
-          $scope.text = data;
-        }, 
-        function(error){
-          $scope.error = error;
-        }
-      );
-    });
+  .controller('RawCtrl', function ($scope, $compile, $location, dataService, sharedProperties) {
 
     // init
     $scope.raw = raw;
     $scope.data = [];
     $scope.metadata = [];
+    $scope.dataview = {
+      'title': "New Chart",
+      'description': "",
+      'urlhash' : "",
+      "settings": {
+        'dataSource' : "",
+        'charts' : {}
+      }
+    };
+
+    //see if we can't find the hash to load
+    if ("hash" in $location.search()){
+      dataService.loadHash($location.search()['hash']).then(
+        function(data){
+          if (! data || data == "null" || data==null){
+            $scope.error = "Could not find the data view";
+          }
+          else{
+            $scope.dataview = data;
+            $scope.dataviewurl = $scope.dataview.settings.dataSource;
+            $scope.runOptions();
+          }
+        }, 
+        function(error){
+          $scope.error = error;
+        }
+      );
+    }
+
+    controlscope = $scope;
+
+
+    $scope.$watch('dataview.settings.dataSource', function (dataview){
+      if ($scope.dataview['settings']['dataSource'] === "") return;
+        dataService.loadSample($scope.dataview['settings']['dataSource']).then(
+          function(data){
+            $scope.text = data;
+          }, 
+          function(error){
+            $scope.error = error;
+          }
+        );
+    });
+
+
     $scope.error = false;
     $scope.loading = true;
 
@@ -167,19 +186,25 @@ angular.module('raw.controllers', [])
     $scope.tempstopwatch = false;
 
     var buildFromOpts = function(){
-        var optSet = JSON.parse($scope.chartoptions);
-        sharedProperties.initialOptions(optSet);
-        //do this in sharedPropreties and cache for later
-        //this is where the directive should be loaded
-        $scope.chartset = d3.map(optSet['charts']).keys();
-        jQuery.each($scope.chartset, function(i,v){
-          $(".chartsection").append('<div class="container" data-title="' + v + '" id="' + v + '" chart="chart"><div>');
-        });
+        if ($scope.dataview.settings){
+          //var optSet = JSON.parse($scope.chartoptions);
+          sharedProperties.initialOptions($scope.dataview.settings);
+          //do this in sharedPropreties and cache for later
+          //this is where the directive should be loaded
+          $scope.chartset = d3.map($scope.dataview.settings['charts']).keys();
+          jQuery.each($scope.chartset, function(i,v){
+            $(".chartsection").append('<div class="container" data-title="' + v + '" id="' + v + '" chart="chart"><div>');
+          });
 
-        /* Get angular to process this block */
-        var fnLink = $compile($(".chartsection"));     // returns a Link function used to bind template to the scope
-        fnLink($scope);  
+          /* Get angular to process this block */
+          var fnLink = $compile($(".chartsection"));     // returns a Link function used to bind template to the scope
+          fnLink($scope);        
+        }
+ 
     }
+
+
+
 
 
     if ($scope.dataviewurl && $scope.chartoptions){
@@ -204,16 +229,6 @@ angular.module('raw.controllers', [])
     }
 
 
-    //TO DO need to fix this not showing
-    $scope.enterTempDesc = function(temptitle, tempdescription){
-      $scope.temptitle = temptitle;
-      $scope.tempdescription = tempdescription;
-    }
-
-    $scope.exitTempDesc = function(){
-      $scope.temptitle = null;
-      $scope.tempdescription = null;
-    }
 
     $scope.dimensionschart = null;
 
@@ -244,7 +259,12 @@ angular.module('raw.controllers', [])
     };
 
 
+    $scope.addData_from_URL = function(){
+      if ($scope.dataviewurl != "" && $scope.dataviewurl != null){
+        $scope.dataview.settings.dataSource = $scope.dataviewurl;
+      }
 
+    }
 
     $scope.fetchOptions = function(){
       //need JSON fallback
@@ -258,6 +278,28 @@ angular.module('raw.controllers', [])
       //memory leak here need to destory other stuff maybe? ~500k
       sharedProperties.destroyAllCharts();
       buildFromOpts();
+    };
+
+    $scope.saveDataview = function(){
+      var outputobj = {"charts":sharedProperties.getOptionsObj(), "dataSource":$scope.dataviewurl};
+
+      $scope.chartoptions = JSON.stringify(outputobj);
+
+      $scope.dataview.settings = $scope.chartoptions;
+
+      dataService.saveDataview($scope.dataview).then(
+        function(data){
+          if (data.errors){
+            $scope.error = data.errors;
+          }
+          else{
+            $scope.dataview = data;
+          }
+        }, 
+        function(error){
+          $scope.error = error;
+        }
+      );
     };
 
     

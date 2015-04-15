@@ -22,6 +22,36 @@ angular.module('raw.services', [])
 		      return deferred.promise;
 		    },
 
+		    loadHash : function(urlhash){
+		      var deferred = $q.defer();
+		      $http.get("/api/3/dataview/" + urlhash)
+			      .then(function(response){
+
+			          deferred.resolve(response.data);
+			      },
+			      function(){
+			          deferred.reject("An error occured while getting the data view");
+			      });
+		      
+		      return deferred.promise;
+		    },
+
+
+		    saveDataview : function(dataview){
+		      var deferred = $q.defer();
+		      $http.post("/api/3/dataview", dataview)
+			      .then(function(response){
+			      	
+
+			          deferred.resolve(response.data);
+			      },
+			      function(){
+			          deferred.reject("An error occured while getting the data view");
+			      });
+		      
+		      return deferred.promise;
+		    },
+
 		    debounce : function (func, wait, immediate) {
 			    var timeout;
 			    var deferred = $q.defer();
@@ -57,6 +87,7 @@ angular.module('raw.services', [])
 		var charts = {};
 		var models = {}
 		var currentEditChart = null;
+		var dataview = {};
 
 		var removeChart = function(index,chartname){
 			    	$("#" + chartname).remove();

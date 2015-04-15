@@ -1,6 +1,5 @@
 <div class="wrapper">
 
-<section class="chartsection" data-ng-show="!error && data.length">
 
 
 
@@ -11,13 +10,30 @@
 
         <div class="container">
 
+            <div>
+                http://localhost:5000/static/viz/index.html?hash={{dataview.urlhash}}
+            </div>
+
+            <label class="col-sm-2 control-label">Title</label>
+            <div class="col-sm-9">
+            <input class="form-control" ng-model="dataview.title" type="text"/>
+            </div>
+            <br/>
+
+            <label class="col-sm-2 control-label">Description</label>
+            <div class="col-sm-9">
+            <input class="form-control" ng-model="dataview.description" type="text"/>
+            </div>
+            <br/>
+
             <label class="col-sm-2 control-label">Paste the URL of the dataview</label>
 
             <div class="col-sm-9">
             <input class="form-control" ng-model="dataviewurl" type="text"/>
             </div>
+            <br/>
             
-            <button ng-click="addDataView()">
+            <button ng-click="addData_from_URL()">
                 Add Data from F/PA name TBD
             </button>
 
@@ -31,6 +47,9 @@
             </button>
             <button ng-click="runOptions()">
                 Run Options
+            </button>
+            <button ng-click="saveDataview()">
+                Save Data View
             </button>
 
 
@@ -92,10 +111,10 @@
 
                     	<div class="col-lg-3 col-md-3">
 							<div class="chart-description">
-								<h4>{{temptitle}}</h4>
+								<h4>{{dataview.title}}</h4>
 								<hr>
 								<p class="light" ng-bind-html="tempdescription"></p>
-								<p class="light" data-ng-show="!tempdescription">No description given</p>
+								<p class="light" data-ng-show="!tempdescription">{{dataview.description}}</p>
 							</div>
 						</div>	
     
@@ -253,6 +272,8 @@
         </div>
 
         </section>
+
+<section class="chartsection" data-ng-show="!error && data.length">
 
 
 
